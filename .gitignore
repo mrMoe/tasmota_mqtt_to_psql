@@ -1,0 +1,4 @@
+.install.stamp
+.vscode/
+.coverage
+*.pyc

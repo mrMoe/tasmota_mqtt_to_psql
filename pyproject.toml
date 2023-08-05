@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "tasmota-mqtt-to-psql"
+version = "0.1.0"
+description = ""
+authors = ["Moritz Herrmann <moritzherrmann09@gmail.com>"]
+readme = "README.md"
+packages = [{include = "tasmota_mqtt_to_psql"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+paho-mqtt = "^1.6.1"
+psycopg = "^3.1.3"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.3.1"
+pytest-cov = "^4.0.0"
+pytest-mock = "^3.10.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

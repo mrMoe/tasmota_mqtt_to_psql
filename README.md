@@ -1,0 +1,1 @@
+# tasmota MQTT to postgresql
