@@ -110,6 +110,16 @@ class MqttToTimescaledb:
                 },
             )
 
+        if payload.get("ANALOG"):
+            self._write_sql(
+                "tasmota_analog",
+                {
+                    "time": payload.get("Time"),
+                    "topic": message.topic,
+                    "analog": payload.get("ANALOG").get("A0")
+                },
+            )
+
         # the Hichi sensor53 has **no** key for the payload data so we need to check based on payload key names to make it unique
         # would be worse having data in the wrong table instead of no data
         if all(i in payload.get("", {}).keys() for i in ["total", "tariff_1", "tariff_2", "neg_total", "neg_tariff_1", "neg_tariff_2", "current"]):

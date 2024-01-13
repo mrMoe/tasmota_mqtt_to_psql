@@ -92,6 +92,10 @@ def test_ignore_LWT(sensor_sut, write_sql_mock, mocker):
 
     write_sql_mock.assert_not_called()
 
+def test_analog_sensor(sensor_sut, write_sql_mock, mocker):
+    sensor_sut._on_tele_sensor("", {}, mocker.Mock(topic="tele/d1_mini_soil_moisture_1/SENSOR", payload='{"Time":"2024-01-13T20:25:03","ANALOG":{"A0":591}}'))
+
+    write_sql_mock.assert_any_call("tasmota_analog", {"time": "2024-01-13T20:25:03", "topic": "tele/d1_mini_soil_moisture_1/SENSOR", "analog": 591})
 
 # def test_psql_integration():
 # sql_conn = psycopg.connect(conninfo="postgresql://postgres@localhost/mqtt")
