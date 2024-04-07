@@ -39,7 +39,11 @@ class MqttToTimescaledb:
     def _write_sql(self, database_name, data):
         logging.debug(f"Writing to {database_name}: {data}")
 
-        statement = psycopg.sql.SQL("INSERT INTO {}({}) VALUES({})").format(psycopg.sql.Identifier(database_name), psycopg.sql.SQL(", ").join(map(psycopg.sql.Identifier, data.keys())), psycopg.sql.SQL(", ").join(map(psycopg.sql.Placeholder, data.keys())))
+        statement = psycopg.sql.SQL("INSERT INTO {}({}) VALUES({})").format(
+            psycopg.sql.Identifier(database_name),
+            psycopg.sql.SQL(", ").join(map(psycopg.sql.Identifier, data.keys())),
+            psycopg.sql.SQL(", ").join(map(psycopg.sql.Placeholder, data.keys())),
+        )
 
         try:
             self.sql_conn.execute(statement, data)
@@ -99,6 +103,9 @@ class MqttToTimescaledb:
                 },
             )
 
+        if payload.get("PMS7003"):
+            self._write_sql("tasmota_pms7003", {"time": payload.get("Time"), "topic": message.topic} | payload.get("PMS7003"))
+
         if payload.get("SDS0X1"):
             self._write_sql(
                 "tasmota_sds0x1",
@@ -116,14 +123,38 @@ class MqttToTimescaledb:
                 {
                     "time": payload.get("Time"),
                     "topic": message.topic,
-                    "analog": payload.get("ANALOG").get("A0")
+                    "analog": payload.get("ANALOG").get("A0"),
                 },
             )
 
         # the Hichi sensor53 has **no** key for the payload data so we need to check based on payload key names to make it unique
         # would be worse having data in the wrong table instead of no data
-        if all(i in payload.get("", {}).keys() for i in ["total", "tariff_1", "tariff_2", "neg_total", "neg_tariff_1", "neg_tariff_2", "current"]):
-            self._write_sql("tasmota_hichi", {"time": payload.get("Time"), "topic": message.topic, "total": payload.get("").get("total"), "tariff_1": payload.get("").get("tariff_1"), "tariff_2": payload.get("").get("tariff_2"), "neg_total": payload.get("").get("neg_total"), "neg_tariff_1": payload.get("").get("neg_tariff_1"), "neg_tariff_2": payload.get("").get("neg_tariff_2"), "current": payload.get("").get("current")})
+        if all(
+            i in payload.get("", {}).keys()
+            for i in [
+                "total",
+                "tariff_1",
+                "tariff_2",
+                "neg_total",
+                "neg_tariff_1",
+                "neg_tariff_2",
+                "current",
+            ]
+        ):
+            self._write_sql(
+                "tasmota_hichi",
+                {
+                    "time": payload.get("Time"),
+                    "topic": message.topic,
+                    "total": payload.get("").get("total"),
+                    "tariff_1": payload.get("").get("tariff_1"),
+                    "tariff_2": payload.get("").get("tariff_2"),
+                    "neg_total": payload.get("").get("neg_total"),
+                    "neg_tariff_1": payload.get("").get("neg_tariff_1"),
+                    "neg_tariff_2": payload.get("").get("neg_tariff_2"),
+                    "current": payload.get("").get("current"),
+                },
+            )
 
 
 if __name__ == "__main__":

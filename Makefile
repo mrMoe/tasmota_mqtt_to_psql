@@ -17,16 +17,16 @@ clean:
 
 .PHONY: lint
 lint: $(INSTALL_STAMP)
-	$(POETRY) run isort --profile=black --lines-after-imports=2 --check-only ./tests/ $(NAME)
-	$(POETRY) run black --check ./tests/ $(NAME) --diff
-	$(POETRY) run flake8 --ignore=W503,E501 ./tests/ $(NAME)
-	$(POETRY) run mypy ./tests/ $(NAME) --ignore-missing-imports
+	$(POETRY) run isort --profile=black --lines-after-imports=2 --check-only $(NAME) ./tests/
+	$(POETRY) run black --check $(NAME) ./tests/ --diff
+	$(POETRY) run flake8 --ignore=W503,E501 $(NAME) ./tests/
+	$(POETRY) run mypy $(NAME) ./tests/ --ignore-missing-imports
 	$(POETRY) run bandit -r $(NAME) -s B608
 
-.PHONY: format
-format: $(INSTALL_STAMP)
-	$(POETRY) run isort --profile=black --lines-after-imports=2 ./tests/ $(NAME)
-	$(POETRY) run black ./tests/ $(NAME)
+.PHONY: pretty
+pretty: $(INSTALL_STAMP)
+	$(POETRY) run isort --profile=black --lines-after-imports=2 $(NAME) ./tests/
+	$(POETRY) run black $(NAME) ./tests/
 
 .PHONY: test
 test: $(INSTALL_STAMP)
