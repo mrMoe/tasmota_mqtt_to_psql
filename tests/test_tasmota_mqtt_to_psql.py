@@ -269,6 +269,26 @@ def test_sds0x1_sensor(sensor_sut, write_sql_mock, mocker):
     )
 
 
+def test_watermeter(sensor_sut, write_sql_mock, mocker):
+    sensor_sut._on_watermeter(
+        "",
+        {},
+        mocker.Mock(
+            topic="watermeter/main/json",
+            payload='{ "value": "545.2518", "raw": "00545.2518", "pre": "545.2518", "error": "no error", "rate": "0.000000", "timestamp": "2024-05-01T19:05:19+0200" }',
+        ),
+    )
+
+    write_sql_mock.assert_called_with(
+        "watermeter",
+        {
+            "time": "2024-05-01T17:05:19+00:00",
+            "topic": "watermeter/main/json",
+            "value": 545.2518
+        },
+    )
+
+
 def test_ignore_LWT(sensor_sut, write_sql_mock, mocker):
     sensor_sut._on_tele_sensor("", {}, mocker.Mock(topic="tele/node_mcu_hydroponics/LWT", payload="Online"))
 

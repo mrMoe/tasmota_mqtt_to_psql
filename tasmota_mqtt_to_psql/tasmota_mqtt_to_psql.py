@@ -1,6 +1,7 @@
 import argparse
 import json
 import logging
+import datetime
 
 import paho.mqtt.client as mqtt
 import psycopg
@@ -24,6 +25,7 @@ class MqttToTimescaledb:
 
         self.mqtt_client.on_connect = self._on_connect
         self.mqtt_client.message_callback_add("tele/#", self._on_tele_sensor)
+        self.mqtt_client.message_callback_add("watermeter/#", self._on_watermeter)
 
         self.mqtt_client.connect(mqtt_host, mqtt_port, 60)
 
@@ -155,6 +157,24 @@ class MqttToTimescaledb:
                     "current": payload.get("").get("current"),
                 },
             )
+
+
+    def _on_watermeter(self, client, userdata, message):
+        if message.topic.endswith("/LWT"):
+            # Ignore Last Will and Testament
+            return
+
+        payload = json.loads(message.payload)
+        logging.debug(f"{message.topic}: {message.payload}")
+
+        self._write_sql(
+            "watermeter",
+            {
+                "time": datetime.datetime.fromisoformat(payload.get("timestamp")).astimezone(datetime.timezone.utc).isoformat(),
+                "topic": message.topic,
+                "value": float(payload.get("value"))
+            },
+        )
 
 
 if __name__ == "__main__":
