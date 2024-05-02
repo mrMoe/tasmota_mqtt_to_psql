@@ -164,10 +164,10 @@ class MqttToTimescaledb:
             # Ignore Last Will and Testament
             return
 
-        payload = json.loads(message.payload)
-        logging.debug(f"{message.topic}: {message.payload}")
-
         if "json" in message.topic:
+            payload = json.loads(message.payload)
+            logging.debug(f"{message.topic}: {message.payload}")
+
             self._write_sql(
                 "watermeter",
                 {"time": datetime.datetime.fromisoformat(payload.get("timestamp")).astimezone(datetime.timezone.utc).isoformat(), "topic": message.topic, "value": float(payload.get("value"))},

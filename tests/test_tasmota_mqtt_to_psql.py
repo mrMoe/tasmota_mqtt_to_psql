@@ -285,6 +285,19 @@ def test_watermeter(sensor_sut, write_sql_mock, mocker):
     )
 
 
+def test_watermeter_plain_is_ignored(sensor_sut, write_sql_mock, mocker):
+    sensor_sut._on_watermeter(
+        "",
+        {},
+        mocker.Mock(
+            topic="watermeter/status",
+            payload="Take Image",
+        ),
+    )
+
+    write_sql_mock.assert_not_called()
+
+
 def test_ignore_LWT(sensor_sut, write_sql_mock, mocker):
     sensor_sut._on_tele_sensor("", {}, mocker.Mock(topic="tele/node_mcu_hydroponics/LWT", payload="Online"))
 
