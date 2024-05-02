@@ -281,11 +281,7 @@ def test_watermeter(sensor_sut, write_sql_mock, mocker):
 
     write_sql_mock.assert_called_with(
         "watermeter",
-        {
-            "time": "2024-05-01T17:05:19+00:00",
-            "topic": "watermeter/main/json",
-            "value": 545.2518
-        },
+        {"time": "2024-05-01T17:05:19+00:00", "topic": "watermeter/main/json", "value": 545.2518},
     )
 
 

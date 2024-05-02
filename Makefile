@@ -46,10 +46,11 @@ run: $(INSTALL_STAMP)
 	# 	-c "DROP DATABASE IF EXISTS mqtt;" \
 	# 	-c "CREATE DATABASE mqtt;" \
 	# 	-c "\c mqtt" \
+	# 	-c "CREATE TABLE IF NOT EXISTS watermeter (time TIMESTAMPTZ NOT NULL, topic VARCHAR(50) NOT NULL, value NUMERIC NOT NULL);" \
 	# 	-c "CREATE TABLE IF NOT EXISTS tasmota_bme280 (time TIMESTAMPTZ NOT NULL, topic VARCHAR(50) NOT NULL, dew_point NUMERIC NOT NULL, humidity NUMERIC NOT NULL, pressure NUMERIC NOT NULL, temperature NUMERIC NOT NULL);" \
+	# 	-c "CREATE TABLE IF NOT EXISTS tasmota_sds0x1 (time TIMESTAMPTZ NOT NULL, topic VARCHAR(50) NOT NULL, pm2_5 NUMERIC NOT NULL, pm10 NUMERIC NOT NULL);" \
 	# 	-c "CREATE TABLE IF NOT EXISTS tasmota_energy ( time TIMESTAMPTZ NOT NULL, topic VARCHAR(50) NOT NULL, total NUMERIC NOT NULL, power NUMERIC NOT NULL, apparent_power NUMERIC NOT NULL, reactive_power NUMERIC NOT NULL, factor NUMERIC NOT NULL, voltage NUMERIC NOT NULL, current NUMERIC NOT NULL);" \
 	# 	-c "CREATE TABLE IF NOT EXISTS tasmota_hichi (time TIMESTAMPTZ NOT NULL, topic VARCHAR(50) NOT NULL, total NUMERIC NOT NULL, tariff_1 NUMERIC NOT NULL, tariff_2 NUMERIC NOT NULL, neg_total NUMERIC NOT NULL, neg_tariff_1 NUMERIC NOT NULL, neg_tariff_2 NUMERIC NOT NULL, current NUMERIC NOT NULL);" \
-	# 	-c "CREATE TABLE IF NOT EXISTS tasmota_sds0x1 (time TIMESTAMPTZ NOT NULL, topic VARCHAR(50) NOT NULL, pm2_5 NUMERIC NOT NULL, pm10 NUMERIC NOT NULL);" \
 	# 	-c "CREATE TABLE IF NOT EXISTS tasmota_state (time TIMESTAMPTZ NOT NULL, topic VARCHAR(50) NOT NULL, load_avg NUMERIC NOT NULL, wifi_rssi NUMERIC NOT NULL, wifi_signal NUMERIC NOT NULL, wifi_link_count NUMERIC NOT NULL);"
 
 	# podman run --rm -p 127.0.0.1:1883:1883 --name mqtt -d docker.io/eclipse-mosquitto sh -c 'echo -e "listener 1883\nallow_anonymous true" > /mosquitto/config/mosquitto.conf && mosquitto -c /mosquitto/config/mosquitto.conf'
@@ -57,6 +58,7 @@ run: $(INSTALL_STAMP)
 	$(POETRY) run python ./$(NAME)/$(NAME).py --db_connection_string="postgresql://postgres@localhost/mqtt" --mqtt_host=localhost --mqtt_client_id=test --log=DEBUG
 
 	# podman exec -it mqtt mosquitto_pub -h localhost -t "tele/node_mcu_terrace/SENSOR" -m '{"Time":"2023-05-21T01:06:38","BME280":{"Temperature":20.5,"Humidity":53.1,"DewPoint":10.6,"Pressure":977.0},"SDS0X1":{"PM2.5":11.8,"PM10":5.8},"PressureUnit":"hPa","TempUnit":"C"}'
+	# podman exec -it mqtt mosquitto_pub -h localhost -t 'watermeter/main/json' -m '{"value": "545.7085","raw": "00545.7085","pre": "545.7085","error": "no error","rate": "0.000920","timestamp": "2024-05-02T20:41:54+0200"}'
 	# podman exec -it postgres psql -U postgres -d mqtt 
 
 .PHONY: container
