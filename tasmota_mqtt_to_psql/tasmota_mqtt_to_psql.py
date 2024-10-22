@@ -2,6 +2,7 @@ import argparse
 import datetime
 import json
 import logging
+import re
 
 import paho.mqtt.client as mqtt
 import psycopg
@@ -94,20 +95,16 @@ class MqttToTimescaledb:
             )
 
         if payload.get("BME280"):
-            self._write_sql(
-                "tasmota_bme280",
-                {
-                    "time": payload.get("Time"),
-                    "topic": message.topic,
-                    "dew_point": payload.get("BME280").get("DewPoint"),
-                    "humidity": payload.get("BME280").get("Humidity"),
-                    "pressure": payload.get("BME280").get("Pressure"),
-                    "temperature": payload.get("BME280").get("Temperature"),
-                },
-            )
+            self._write_sql("tasmota_bme280", {"time": payload.get("Time"), "topic": message.topic} | {self._camel_to_snake(k): v for k, v in payload.get("BME280").items()})
+
+        if payload.get("ENS160"):
+            self._write_sql("tasmota_ens160", {"time": payload.get("Time"), "topic": message.topic} | {self._camel_to_snake(k): v for k, v in payload.get("ENS160").items()})
+
+        if payload.get("AHT21"):
+            self._write_sql("tasmota_aht21", {"time": payload.get("Time"), "topic": message.topic} | {self._camel_to_snake(k): v for k, v in payload.get("AHT21").items()})
 
         if payload.get("PMS7003"):
-            self._write_sql("tasmota_pms7003", {"time": payload.get("Time"), "topic": message.topic} | payload.get("PMS7003"))
+            self._write_sql("tasmota_pms7003", {"time": payload.get("Time"), "topic": message.topic} | {self._camel_to_snake(k): v for k, v in payload.get("PMS7003").items()})
 
         if payload.get("SDS0X1"):
             self._write_sql(
@@ -172,6 +169,12 @@ class MqttToTimescaledb:
                 "watermeter",
                 {"time": datetime.datetime.fromisoformat(payload.get("timestamp")).astimezone(datetime.timezone.utc).isoformat(), "topic": message.topic, "value": float(payload.get("value"))},
             )
+
+    def _camel_to_snake(self, name):
+        # Handle consecutive uppercase letters (e.g., "ABC" in "ABCTest")
+        name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+        # Handle the rest
+        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name).lower()
 
 
 if __name__ == "__main__":
