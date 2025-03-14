@@ -165,10 +165,13 @@ class MqttToTimescaledb:
             payload = json.loads(message.payload)
             logging.debug(f"{message.topic}: {message.payload}")
 
-            self._write_sql(
-                "watermeter",
-                {"time": datetime.datetime.fromisoformat(payload.get("timestamp")).astimezone(datetime.timezone.utc).isoformat(), "topic": message.topic, "value": float(payload.get("value"))},
-            )
+            try:
+                self._write_sql(
+                    "watermeter",
+                    {"time": datetime.datetime.fromisoformat(payload.get("timestamp")).astimezone(datetime.timezone.utc).isoformat(), "topic": message.topic, "value": float(payload.get("value"))},
+                )
+            except Exception as e:
+                logging.exception(f"{message.topic}: {message.payload}", e)
 
     def _camel_to_snake(self, name):
         # Handle consecutive uppercase letters (e.g., "ABC" in "ABCTest")
